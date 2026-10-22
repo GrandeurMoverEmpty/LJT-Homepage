@@ -11,26 +11,11 @@ jobs:
   enable:
     runs-on: ubuntu-latest
     steps:
-      - name: Enable Pages
-        uses: actions/github-script@v7
-        with:
-          script: |
-            try {
-              const { data } = await github.rest.repos.createPagesSite({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                build_type: 'workflow'
-              });
-              console.log('Pages enabled:', JSON.stringify(data));
-            } catch (e) {
-              console.log('Create failed:', e.message);
-              try {
-                const pages = await github.rest.repos.getPages({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo
-                });
-                console.log('Pages already exists:', JSON.stringify(pages.data));
-              } catch (e2) {
-                console.log('Get failed:', e2.message);
-              }
-            }
+      - name: Enable Pages via gh
+        run: |
+          gh api --method POST /repos/${{ github.repository }}/pages \
+            -f source[branch]=gh-pages \
+            -f source[path]=/ || echo "POST failed"
+          gh api /repos/${{ github.repository }}/pages || echo "GET failed"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
