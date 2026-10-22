@@ -6,6 +6,7 @@ on:
 permissions:
   pages: write
   contents: read
+  administration: write
 
 jobs:
   enable:
@@ -19,17 +20,17 @@ jobs:
               const { data } = await github.rest.repos.createPagesSite({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                source: { branch: 'master', path: '/' }
+                build_type: 'workflow'
               });
-              console.log('Pages enabled:', data);
+              console.log('Pages enabled:', JSON.stringify(data));
             } catch (e) {
-              console.log('Create failed, trying get:', e.message);
+              console.log('Create failed:', e.message);
               try {
                 const pages = await github.rest.repos.getPages({
                   owner: context.repo.owner,
                   repo: context.repo.repo
                 });
-                console.log('Pages already exists:', pages.data);
+                console.log('Pages already exists:', JSON.stringify(pages.data));
               } catch (e2) {
                 console.log('Get failed:', e2.message);
               }
