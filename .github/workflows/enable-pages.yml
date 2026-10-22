@@ -1,0 +1,36 @@
+name: Enable Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  contents: read
+
+jobs:
+  enable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable Pages
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const { data } = await github.rest.repos.createPagesSite({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                source: { branch: 'master', path: '/' }
+              });
+              console.log('Pages enabled:', data);
+            } catch (e) {
+              console.log('Create failed, trying get:', e.message);
+              try {
+                const pages = await github.rest.repos.getPages({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo
+                });
+                console.log('Pages already exists:', pages.data);
+              } catch (e2) {
+                console.log('Get failed:', e2.message);
+              }
+            }
