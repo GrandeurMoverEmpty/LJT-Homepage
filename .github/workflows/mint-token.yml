@@ -1,4 +1,4 @@
-name: Test Pages with Write All
+name: Check Pages Status
 
 on:
   workflow_dispatch:
@@ -6,20 +6,15 @@ on:
 permissions: write-all
 
 jobs:
-  test:
+  check:
     runs-on: ubuntu-latest
     steps:
-      - name: Direct curl POST /pages
+      - name: GET /pages
         run: |
           set -x
           echo "Token length: ${#GITHUB_TOKEN}"
-          curl -sS -X POST \
+          curl -sS \
             -H "Authorization: Bearer ${GITHUB_TOKEN}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages" \
-            -d '{"build_type":"workflow"}' \
             -w "\nHTTP=%{http_code}\n"
-      - name: configure-pages action with enablement
-        uses: actions/configure-pages@v6.0.0
-        with:
-          enablement: true
