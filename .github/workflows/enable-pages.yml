@@ -1,0 +1,39 @@
+# Workflow to enable GitHub Pages and set its build type to GitHub Actions
+name: Enable GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+  repository-projects: write
+
+jobs:
+  enable:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable Pages via REST API
+        run: |
+          set -x
+          RESPONSE=$(curl -sS -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pages" \
+            -d '{"build_type":"workflow"}')
+          echo "$RESPONSE"
+      - name: Build and deploy
+        uses: actions/configure-pages@v6.0.0
+        id: pages
+        with:
+          enablement: false
+      - name: Build with Jekyll
+        run: bundle install && bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        env:
+          JEKYLL_ENV: production
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5.0.0
+      - name: Deploy
+        uses: actions/deploy-pages@v5
